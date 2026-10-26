@@ -28,5 +28,7 @@ build e testes em pushes e pull requests.
 Arquivos ficam em `backend/storage`, com nomes UUID. Metadados são perdidos
 ao reiniciar o servidor; arquivos persistem no disco. Nesta etapa não há
 autenticação e o dono é registrado como `anonymous`.
+Upload e download compartilham um limite de 60 requisições por minuto por IP;
+excedê-lo retorna status 429.
 
 &copy; 2025 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)

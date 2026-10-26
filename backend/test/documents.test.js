@@ -117,4 +117,22 @@ test('endpoints de documentos', async (t) => {
     assert.equal(response.status, 404);
     assert.deepEqual(await response.json(), { error: 'Documento não encontrado.' });
   });
+
+  await t.test('limita requisições de arquivos por IP', async () => {
+    let response;
+    for (let attempt = 0; attempt < 61; attempt += 1) {
+      response = await fetch(`${baseUrl}/documents/inexistente/download`);
+      await response.json();
+      if (response.status === 429) break;
+      assert.equal(response.status, 404);
+    }
+    assert.equal(response.status, 429);
+    assert.ok(response.headers.get('retry-after'));
+
+    const upload = await fetch(`${baseUrl}/upload`, { method: 'POST' });
+    assert.equal(upload.status, 429);
+    assert.deepEqual(await upload.json(), {
+      error: 'Muitas requisições. Tente novamente em um minuto.',
+    });
+  });
 });
