@@ -10,6 +10,7 @@ function createDocumentController({ documentService }) {
       return next();
     },
 
+    
     upload(req, res) {
       if (!req.file) {
         return res.status(400).json({ error: 'O arquivo é obrigatório.' });
