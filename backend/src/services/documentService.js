@@ -2,14 +2,14 @@ const { randomUUID } = require('node:crypto');
 
 function createDocumentService({ documentRepository }) {
   return {
-    createDocument(file, owner) {
+    createDocument({ originalName, size, storageName }, owner) {
       const document = {
         id: randomUUID(),
-        originalName: file.originalname,
-        size: file.size,
+        originalName,
+        size,
         uploadedAt: new Date().toISOString(),
         owner,
-        storageName: file.filename,
+        storageName,
       };
 
       documentRepository.add(document);

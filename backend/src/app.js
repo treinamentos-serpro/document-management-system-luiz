@@ -5,6 +5,7 @@ const createDocumentController = require('./controllers/documentController');
 const createDocumentRepository = require('./repositories/documentRepository');
 const createDocumentRoutes = require('./routes/documentRoutes');
 const createDocumentService = require('./services/documentService');
+const createUploadDocument = require('./middleware/uploadDocument');
 
 function positiveInteger(value, fallback) {
   const parsed = Number(value);
@@ -19,10 +20,11 @@ function createApp({
   const documentRepository = createDocumentRepository({ storageDir });
   const documentService = createDocumentService({ documentRepository });
   const documentController = createDocumentController({ documentService });
+  const uploadDocument = createUploadDocument({ storageDir, maxFileSizeBytes });
 
   app.use(express.json());
   app.get('/health', (req, res) => res.json({ status: 'ok' }));
-  app.use(createDocumentRoutes({ documentController, storageDir, maxFileSizeBytes }));
+  app.use(createDocumentRoutes({ documentController, uploadDocument }));
   app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
   app.use((error, req, res, next) => {
     if (res.headersSent) {

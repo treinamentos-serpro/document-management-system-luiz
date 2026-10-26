@@ -95,6 +95,29 @@ As respostas de erro usam JSON no formato `{ "error": "mensagem" }`, sem stack t
 - O nome físico do arquivo é gerado pelo sistema, separado do nome original fornecido pelo cliente.
 - Metadados em memória desaparecem após reinício, podendo deixar arquivos sem referência no diretório local. Recuperação ou limpeza automática não fazem parte desta fase.
 - `X-User-Id` pode ser falsificado; autenticação real permanece fora do escopo.
+- A composição das dependências ocorre em `app.js`. As rotas recebem o middleware
+  de upload pronto; a configuração do Multer e a validação de identidade ficam em
+  `middleware/`, sem atribuir essas responsabilidades ao controller.
+- O controller traduz os campos do Multer para metadados independentes do
+  transporte antes de chamar o serviço. O serviço não recebe `req`, `res` ou
+  objetos específicos do Multer.
+- O repository resolve o diretório para um caminho absoluto e rejeita nomes
+  físicos que contenham diretórios ou caminhos absolutos. O nome original
+  continua sendo apenas metadado e nome sugerido no download.
+- No frontend, `useDocuments` gerencia carregamento e atualização da lista,
+  cancela requisições anteriores e ignora respostas obsoletas ao trocar o
+  usuário. `ErrorMessage` centraliza a apresentação acessível de erros.
+
+### Validação da refatoração
+
+- Backend: `cd backend && npm test` cobre contratos HTTP, isolamento por dono
+  declarado, limite de upload, separação dos nomes original/físico, serviço
+  independente do Multer e rejeição de caminhos físicos inválidos.
+- Frontend: `cd frontend && npm test` cobre o serviço de API, identidade,
+  propagação do cancelamento, multipart, download e respostas de erro.
+- Build: `cd frontend && npm run build`.
+- Autenticação, quotas, paginação e persistência durável dos metadados permanecem
+  fora desta refatoração; não se deve expor o seed como um DMS seguro em produção.
 
 ## 8. Plano de execução da especificação
 

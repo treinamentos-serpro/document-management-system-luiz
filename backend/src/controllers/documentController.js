@@ -1,22 +1,15 @@
 function createDocumentController({ documentService }) {
   return {
-    requireOwner(req, res, next) {
-      const owner = req.get('X-User-Id')?.trim();
-      if (!owner) {
-        return res.status(400).json({ error: 'O cabeçalho X-User-Id é obrigatório.' });
-      }
-
-      req.owner = owner;
-      return next();
-    },
-
-    
     upload(req, res) {
       if (!req.file) {
         return res.status(400).json({ error: 'O arquivo é obrigatório.' });
       }
 
-      const document = documentService.createDocument(req.file, req.owner);
+      const document = documentService.createDocument({
+        originalName: req.file.originalname,
+        size: req.file.size,
+        storageName: req.file.filename,
+      }, req.owner);
       return res.status(201).json(document);
     },
 

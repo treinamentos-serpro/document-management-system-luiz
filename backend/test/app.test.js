@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { mkdtemp, rm } = require('node:fs/promises');
+const { mkdtemp, readdir, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const path = require('node:path');
 const appModule = require('../src/app');
@@ -14,6 +14,7 @@ async function startTestServer(options = {}) {
 
   return {
     baseUrl: `http://127.0.0.1:${address.port}`,
+    storageDir,
     cleanup: async () => {
       await new Promise((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));
@@ -106,4 +107,46 @@ test('rejeita uploads acima do limite configurado', async (context) => {
 
   assert.equal(response.status, 413);
   assert.equal(typeof (await response.json()).error, 'string');
+  assert.deepEqual(await readdir(server.storageDir), []);
+});
+
+test('valida a identidade antes de gravar arquivos e normaliza espaços', async (context) => {
+  const server = await startTestServer();
+  context.after(server.cleanup);
+
+  const body = new FormData();
+  body.append('file', new Blob(['conteudo']), 'arquivo.txt');
+  const response = await fetch(`${server.baseUrl}/upload`, { method: 'POST', body });
+  assert.equal(response.status, 400);
+  assert.deepEqual(await readdir(server.storageDir), []);
+
+  const ownBody = new FormData();
+  ownBody.append('file', new Blob(['conteudo']), 'arquivo.txt');
+  const upload = await fetch(`${server.baseUrl}/upload`, {
+    method: 'POST', headers: { 'X-User-Id': ' user-1 ' }, body: ownBody,
+  });
+  assert.equal(upload.status, 201);
+  assert.equal((await upload.json()).owner, 'user-1');
+});
+
+test('mantém o nome original separado do nome físico em upload e download', async (context) => {
+  const server = await startTestServer();
+  context.after(server.cleanup);
+  const body = new FormData();
+  body.append('file', new Blob(['conteudo']), '../../relatorio.txt');
+  const response = await fetch(`${server.baseUrl}/upload`, {
+    method: 'POST', headers: { 'X-User-Id': 'user-1' }, body,
+  });
+  assert.equal(response.status, 201);
+  const document = await response.json();
+  const files = await readdir(server.storageDir);
+  assert.equal(files.length, 1);
+  assert.match(files[0], /^[0-9a-f-]{36}$/);
+  assert.equal(files.includes(document.originalName), false);
+
+  const download = await fetch(`${server.baseUrl}/documents/${document.id}/download`, {
+    headers: { 'X-User-Id': 'user-1' },
+  });
+  assert.equal(download.status, 200);
+  assert.equal(await download.text(), 'conteudo');
 });

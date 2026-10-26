@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { downloadDocument } from '../services/documentApi.js';
+import ErrorMessage from './ErrorMessage.jsx';
 
 function saveBlob(blob, fileName) {
   const url = URL.createObjectURL(blob);
@@ -32,7 +33,7 @@ export default function DownloadButton({ document: doc, userId }) {
       <button type="button" onClick={handleClick} disabled={isDownloading}>
         {isDownloading ? 'Baixando...' : 'Baixar'}
       </button>
-      {error && <span role="alert" style={{ color: 'crimson', marginLeft: '0.5rem' }}>{error}</span>}
+      <ErrorMessage message={error} />
     </>
   );
 }

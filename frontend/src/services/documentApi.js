@@ -14,8 +14,8 @@ async function request(path, userId, options = {}) {
   return response;
 }
 
-export async function listDocuments(userId) {
-  const response = await request('/documents', userId);
+export async function listDocuments(userId, { signal } = {}) {
+  const response = await request('/documents', userId, { signal });
   return response.json();
 }
 

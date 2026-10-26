@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { uploadDocument } from '../services/documentApi.js';
+import ErrorMessage from './ErrorMessage.jsx';
 
 export default function UploadComponent({ userId, onUploaded }) {
   const [file, setFile] = useState(null);
@@ -34,13 +35,14 @@ export default function UploadComponent({ userId, onUploaded }) {
       <input
         key={inputKey}
         type="file"
+        aria-label="Selecione um documento"
         onChange={(event) => setFile(event.target.files[0] ?? null)}
         disabled={isUploading}
       />
       <button type="submit" disabled={!file || isUploading}>
         {isUploading ? 'Enviando...' : 'Enviar'}
       </button>
-      {error && <p role="alert" style={{ color: 'crimson' }}>{error}</p>}
+      <ErrorMessage message={error} />
     </form>
   );
 }
