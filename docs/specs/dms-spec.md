@@ -14,6 +14,7 @@ Permitir que usuários enviem, listem e baixem documentos armazenados no filesys
 - Interface web para upload, listagem e download, em etapa de implementação posterior.
 - Armazenamento dos arquivos no filesystem local e dos metadados em memória.
 
+
 ### Fora do escopo
 
 - Armazenamento em nuvem ou serviços externos.
